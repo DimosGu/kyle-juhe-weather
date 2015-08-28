@@ -1,7 +1,19 @@
 package com.kyletung.kylejuheweather;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,30 +24,53 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.prefs.Preferences;
+
+public class MainActivity extends AppCompatActivity {
 
     //toolbar
     Toolbar toolbar;
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle actionBarDrawerToggle;
-    SwipeRefreshLayout swipeRefreshLayout;
 
     //drawer menu
     ListView listView;
-    String[] drawerCity = {"Beijing", "Hangzhou"};
-    ArrayAdapter<String> drawerAdapter;
+    CityAdapter cityAdapter;
     ImageButton addCity;
+    List<Fragment> fragmentList = new ArrayList<>();
+
+    //tool
+    RelativeLayout relativeLayout;
+    FragmentManager fm = getSupportFragmentManager();
+    private SQLiteDatabase db;
+    public static final String CREATE_ALARM_SQL = "create table CityName (" +
+            "_id integer primary key autoincrement," +
+            "city text)";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //init page
+        relativeLayout = (RelativeLayout) findViewById(R.id.frame_layout);
+        //init database and list
+        MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this, "CityName.db3", null, 1);
+        db = mySQLiteHelper.getReadableDatabase();
+        cityAdapter = new CityAdapter();
+        initList();
         //init toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -46,19 +81,24 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         //set status bar color
         drawerLayout.setStatusBarBackground(R.color.status_bar);
-        //set swipe refresh
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-        swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorSchemeResources(R.color.refresh_one, R.color.refresh_two, R.color.refresh_three, R.color.refresh_four);
         //set drawer menu
         listView = (ListView) findViewById(R.id.city_list);
-        drawerAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, drawerCity);
-        listView.setAdapter(drawerAdapter);
+        listView.setAdapter(cityAdapter);
         listView.setDividerHeight(0);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 System.out.println(">>> item long click success <<<");
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle("城市");
+                dialog.setMessage("确定要删除城市吗？");
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeList(position);
+                    }
+                });
+                dialog.show();
                 return true;
             }
         });
@@ -66,37 +106,63 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 System.out.println(">>> item click success <<<");
+                fm.beginTransaction().replace(R.id.frame_layout, fragmentList.get(position)).commit();
+                drawerLayout.closeDrawer(findViewById(R.id.drawer_layout_menu));
             }
         });
         addCity = (ImageButton) findViewById(R.id.add_city);
         addCity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CityListActivity.class);
+                startActivityForResult(intent, 1);
                 System.out.println(">>> add city click success <<<");
             }
         });
+        //init ui
+        if (fragmentList.size() != 0) {
+            fm.beginTransaction().replace(R.id.frame_layout, fragmentList.get(0)).commit();
+        }
     }
 
     @Override
-    public void onRefresh() {
-        Message message = new Message();
-        message.what = 1;
-        handler.sendMessageDelayed(message, 5000);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1 && resultCode == 7) {
+            String name = data.getStringExtra("select_city");
+            addList(name);
+            //database
+            ContentValues values = new ContentValues();
+            values.put("city", name);
+            db.insert("CityName", null, values);
+            fm.beginTransaction().replace(R.id.frame_layout, fragmentList.get(cityAdapter.getCount() - 1)).commitAllowingStateLoss();
+            drawerLayout.closeDrawer(findViewById(R.id.drawer_layout_menu));
+        }
     }
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 1:
-                    System.out.println(">>> refresh success <<<");
-                    swipeRefreshLayout.setRefreshing(false);
-                    break;
-                default:
-                    break;
-            }
+    public void initList() {
+        Cursor cursor = db.query("CityName", null, null, null, null, null, null);
+        while (cursor.moveToNext()) {
+            String cityName = cursor.getString(cursor.getColumnIndex("city"));
+            addList(cityName);
         }
-    };
+        cursor.close();
+    }
+
+    public void addList(String cityName) {
+        cityAdapter.addCity(cityName);
+        //fragment
+        Fragment fragment = new WeatherFragment();
+        Bundle bundle = new Bundle();
+        bundle.putCharSequence("city", cityName);
+        fragment.setArguments(bundle);
+        fragmentList.add(fragment);
+    }
+
+    public void removeList(int position) {
+        db.delete("CityName", "city = ?", new String[]{(String) cityAdapter.getItem(position)});
+        cityAdapter.removeCity(position);
+        fragmentList.remove(position);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -118,5 +184,23 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    class MySQLiteHelper extends SQLiteOpenHelper {
+
+        public MySQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+            super(context, name, factory, version);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL(CREATE_ALARM_SQL);
+            System.out.println(">>> create City Name SQLite success <<<");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
     }
 }

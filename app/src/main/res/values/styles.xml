@@ -7,4 +7,9 @@
         <item name="colorAccent">@color/color_accent</item>
     </style>
 
+    <style name="CityListTheme" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <item name="colorAccent">@color/color_accent</item>
+    </style>
+
 </resources>

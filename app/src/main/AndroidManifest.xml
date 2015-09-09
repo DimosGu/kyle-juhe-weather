@@ -29,6 +29,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:theme="@style/CityListTheme"
             android:name=".CityListActivity"
             android:label="@string/title_activity_city_list">
         </activity>

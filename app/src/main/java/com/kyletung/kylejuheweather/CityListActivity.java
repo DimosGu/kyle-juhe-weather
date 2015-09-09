@@ -45,6 +45,7 @@ public class CityListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city_list);
+
         //init database
         MySQLiteHelper mySQLiteHelper = new MySQLiteHelper(this, "CityList.db3", null, 1);
         db = mySQLiteHelper.getReadableDatabase();
@@ -90,7 +91,7 @@ public class CityListActivity extends AppCompatActivity {
     }
 
     public void getCity() {
-
+        db.delete("CityList", null, null);
         JuheData.executeWithAPI(this, 39, "http://v.juhe.cn/weather/citys", JuheData.GET, new Parameters(), new DataCallBack() {
             @Override
             public void onSuccess(int i, String s) {
@@ -135,7 +136,7 @@ public class CityListActivity extends AppCompatActivity {
     public void searchCity(String city) {
         Cursor cursor = db.query("CityList", null, "district = ?", new String[]{city}, null, null, null, null);
         cityList = new ArrayList<>();
-        if (cursor.moveToFirst()) {
+        if (cursor.moveToNext()) {
             cityList.add(cursor.getString(cursor.getColumnIndex("district")));
         } else {
             Toast.makeText(this, "没有这个城市", Toast.LENGTH_SHORT).show();

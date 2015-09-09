@@ -15,4 +15,9 @@
     <color name="refresh_three">#0266c8</color>
     <color name="refresh_four">#f2b50f</color>
 
+    <!-- other -->
+    <color name="weather_fragment_background">#eee</color>
+    <color name="city_search_text_hint">#ddd</color>
+    <color name="city_search_bar">#3080c0</color>
+
 </resources>

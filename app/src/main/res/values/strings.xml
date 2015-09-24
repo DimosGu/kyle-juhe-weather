@@ -2,7 +2,6 @@
     <string name="app_name">天气</string>
     <string name="drawer_toggle_open">Open</string>
     <string name="drawer_toggle_close">Close</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="drawer_menu_head_text">因天气\n好心情</string>
     <string name="add_city">Add City</string>
     <string name="city">城市</string>
@@ -10,7 +9,7 @@
     <string name="weather_publish_time">Weather Pulish Time</string>
     <string name="title_activity_city_list">CityListActivity</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="select_city">选择城市</string>
     <string name="input_city_name">请输入城市或者地区名称</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 </resources>

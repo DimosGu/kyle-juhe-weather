@@ -32,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     CityAdapter cityAdapter;
     ImageButton addCity;
     List<Fragment> fragmentList = new ArrayList<>();
+    TextView settings;
 
     //tool
     RelativeLayout relativeLayout;
@@ -123,7 +125,16 @@ public class MainActivity extends AppCompatActivity {
         if (fragmentList.size() != 0) {
             fm.beginTransaction().replace(R.id.frame_layout, fragmentList.get(0)).commit();
         }
-        //init city list
+
+        //set settings
+        settings = (TextView) findViewById(R.id.menu_settings);
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 

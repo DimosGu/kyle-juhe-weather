@@ -19,5 +19,6 @@
     <color name="weather_fragment_background">#eee</color>
     <color name="city_search_text_hint">#ddd</color>
     <color name="city_search_bar">#3080c0</color>
+    <color name="widget_text_color">#777</color>
 
 </resources>

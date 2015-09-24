@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme" >
         <meta-data
             android:name="com.thinkland.juheapi.openid"
-            android:value="JHde8ce1ef4f2a23b837b6f4f206455c78">
+            android:value="JHde8ce1ef4f2a23b837b6f4f206455c78" >
         </meta-data>
 
         <activity
@@ -29,9 +29,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:theme="@style/CityListTheme"
             android:name=".CityListActivity"
-            android:label="@string/title_activity_city_list">
+            android:label="@string/title_activity_city_list"
+            android:theme="@style/CityListTheme" >
+        </activity>
+
+        <receiver
+            android:name=".DesktopWidget"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider" />
+        </receiver>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/SettingsActivityTheme" >
         </activity>
     </application>
 

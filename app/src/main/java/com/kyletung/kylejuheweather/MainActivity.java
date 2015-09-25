@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -132,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putStringArrayList("cityList", cityAdapter.cityList);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -192,6 +196,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerVisible(Gravity.LEFT)) {
+            drawerLayout.closeDrawer(findViewById(R.id.drawer_layout_menu));
+        } else {
+            super.onBackPressed();
         }
     }
 }

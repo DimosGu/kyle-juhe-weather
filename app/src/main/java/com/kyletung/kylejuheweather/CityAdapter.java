@@ -22,7 +22,7 @@ import java.util.List;
 
 public class CityAdapter extends BaseAdapter {
 
-    List<String> cityList;
+    public ArrayList<String> cityList;
     TextView textView;
 
     public CityAdapter() {

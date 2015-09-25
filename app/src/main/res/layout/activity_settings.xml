@@ -16,9 +16,33 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="hello_world" />
+    <LinearLayout
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:elevation="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/settings_set_widget_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/settings_item_background"
+            android:clickable="true"
+            android:padding="16dp"
+            android:text="设置桌面组件城市"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/settings_author_info"
+            android:background="@drawable/settings_item_background"
+            android:clickable="true"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:text="作者信息"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 </LinearLayout>

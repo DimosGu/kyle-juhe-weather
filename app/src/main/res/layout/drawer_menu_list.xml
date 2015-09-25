@@ -7,6 +7,7 @@
     android:orientation="horizontal">
 
     <TextView
+        android:background="@drawable/settings_item_background"
         android:padding="4dp"
         android:textSize="22sp"
         android:text="City"

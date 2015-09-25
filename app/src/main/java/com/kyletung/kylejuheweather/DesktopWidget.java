@@ -18,6 +18,8 @@ import org.json.JSONObject;
 
 public class DesktopWidget extends AppWidgetProvider {
 
+    public static String city;
+
     RemoteViews view;
 
     @Override
@@ -38,7 +40,11 @@ public class DesktopWidget extends AppWidgetProvider {
 
         //update data
         Parameters parameters = new Parameters();
-        parameters.add("cityname", "杭州");
+        //set city
+        if (city == null) {
+            city = "杭州";
+        }
+        parameters.add("cityname", city);
         JuheData.executeWithAPI(context, 39, "http://v.juhe.cn/weather/index", JuheData.GET, parameters, new DataCallBack() {
             @Override
             public void onSuccess(int i, String s) {
@@ -84,6 +90,57 @@ public class DesktopWidget extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         super.onDeleted(context, appWidgetIds);
+    }
+
+    @Override
+    public void onReceive(final Context context, Intent intent) {
+        if (intent.getAction().equals("com.kyletung.kylejuheweather.UPDATE_WIDGET")) {
+            view = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
+            view.setImageViewResource(R.id.widget_background, R.drawable.widget_background);
+            //update data
+            Parameters parameters = new Parameters();
+            //set city
+            if (city == null) {
+                city = "杭州";
+            }
+            parameters.add("cityname", city);
+            JuheData.executeWithAPI(context, 39, "http://v.juhe.cn/weather/index", JuheData.GET, parameters, new DataCallBack() {
+                @Override
+                public void onSuccess(int i, String s) {
+                    try {
+                        JSONObject result = new JSONObject(s).getJSONObject("result");
+                        //today
+                        JSONObject today = result.getJSONObject("today");
+                        view.setTextViewText(R.id.widget_city, today.getString("city"));
+                        view.setTextViewText(R.id.widget_temperature, today.getString("temperature"));
+                        view.setTextViewText(R.id.widget_weather, today.getString("weather"));
+                        view.setTextViewText(R.id.widget_wind, today.getString("wind"));
+                        view.setTextViewText(R.id.widget_date_week, today.getString("date_y") + " " + today.getString("week"));
+                        //weather image
+                        view.setImageViewResource(R.id.widget_weather_image, setWeatherImage(today.getString("weather")));
+                        //sk
+                        JSONObject sk = result.getJSONObject("sk");
+                        view.setTextViewText(R.id.widget_update_time, "更新于" + sk.getString("time"));
+                        //commit
+                        ComponentName componentName = new ComponentName(context, DesktopWidget.class);
+                        AppWidgetManager.getInstance(context).updateAppWidget(componentName, view);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFinish() {
+                    Toast.makeText(context, "天气组件更新完成", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(int i, String s, Throwable throwable) {
+                    Toast.makeText(context, "天气组件更新失败", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        super.onReceive(context, intent);
     }
 
     public int setWeatherImage(String weather) {
